@@ -1,7 +1,9 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { MdOpenInNew, MdExpandLess } from "react-icons/md";
+import { MdOpenInNew, MdExpandMore } from "react-icons/md";
+import { BiSolidDownArrow } from "react-icons/bi";
+import { AiOutlineCheck } from "react-icons/ai";
 
 export const columns: ColumnDef<any>[] = [
   {
@@ -12,6 +14,11 @@ export const columns: ColumnDef<any>[] = [
   {
     accessorKey: "description",
     header: "Description",
+    cell: (info) => <div className="flex justify-center text-xs uppercase">{String(info.getValue())}</div>,
+  },
+  {
+    accessorKey: "product",
+    header: "Product",
     cell: (info) => <div className="flex justify-center text-xs uppercase">{String(info.getValue())}</div>,
   },
   {
@@ -27,7 +34,15 @@ export const columns: ColumnDef<any>[] = [
   {
     accessorKey: "approvalStatus",
     header: "Aproval Status",
-    cell: (info) => <div className="flex justify-center text-xs uppercase">{String(info.getValue())}</div>,
+    cell: (info) => (
+      <div className="flex justify-center text-xs uppercase">
+        <button className="bg-green-400 rounded-2xl px-4 py-1 items-center font-bold text-white flex gap-2">
+          <AiOutlineCheck className="bg-green-700 rounded-full w-6 h-6 p-1" />
+          {String(info.getValue())}
+          <BiSolidDownArrow className="text-black" />
+        </button>
+      </div>
+    ),
   },
   {
     accessorKey: "actions",
@@ -38,7 +53,7 @@ export const columns: ColumnDef<any>[] = [
           <MdOpenInNew />
         </button>
         <button>
-          <MdExpandLess />
+          <MdExpandMore />
         </button>
       </div>
     ),

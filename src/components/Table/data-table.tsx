@@ -65,9 +65,9 @@ export function DataTable<TData, TValue>({ columns, data, isLoading }: DataTable
         <div className="text-muted-foreground flex items-center justify-start text-sm pl-4 py-4">
           Total of {table.getRowModel().rows?.length} items
         </div>
-        <div id="table-container" className="max-h-[60vh] rounded-md border">
+        <div id="table-container" className="border overflow-x-auto overflow-y-auto ">
           <Table>
-            <TableHeader className="bg-violet-50">
+            <TableHeader className="bg-neutral-50">
               {table.getHeaderGroups().map((headerGroup) => (
                 <>
                   <TableRow key={headerGroup.id}>
@@ -115,7 +115,7 @@ export function DataTable<TData, TValue>({ columns, data, isLoading }: DataTable
                       <TableRow
                         key={row.id}
                         data-state={row.getIsSelected() && "selected"}
-                        className="even:bg-violet-50"
+                        className="even:bg-neutral-50"
                       >
                         {row.getVisibleCells().map((cell) => (
                           <TableCell key={cell.id} className="py-6">
@@ -151,6 +151,15 @@ export function DataTable<TData, TValue>({ columns, data, isLoading }: DataTable
             <button>Next</button>
           </div>
         </div>
+        <button
+          type="submit"
+          data-te-ripple-init
+          data-te-ripple-color="light"
+          className="!fixed bottom-5 right-5 rounded-md bg-green-500 p-3 text-md font-bold uppercase leading-tight text-white shadow-md transition duration-150 ease-in-out hover:bg-green-700 hover:shadow-lg focus:bg-green-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-green-800 active:shadow-lg"
+          id="btn-back-to-top"
+        >
+          <div className="flex items-center gap-2">Confirm</div>
+        </button>
       </div>
     </>
   );
