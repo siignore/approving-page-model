@@ -3,6 +3,7 @@
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "../../ui/table/table";
 import { useState } from "react";
 import { AiOutlineArrowDown, AiOutlineArrowUp } from "react-icons/ai";
+import { RankingInfo, rankItem } from "@tanstack/match-sorter-utils";
 import {
   ColumnDef,
   flexRender,
@@ -15,21 +16,39 @@ import {
   getFilteredRowModel,
   VisibilityState,
   getFacetedUniqueValues,
+  FilterFn,
 } from "@tanstack/react-table";
+import RadioGroupApproving from "../Input/Radial";
+
+declare module "@tanstack/table-core" {
+  interface FilterFns {
+    fuzzy: FilterFn<unknown>;
+  }
+  interface FilterMeta {
+    itemRank: RankingInfo;
+  }
+}
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   isLoading?: boolean;
+  globalFilter?: string;
+  setGlobalFilter?: (value: string) => void;
 }
 
-export function DataTable<TData, TValue>({ columns, data, isLoading }: DataTableProps<TData, TValue>) {
-  const [currentPage, setCurrentPage] = useState(1);
+export function DataTable<TData, TValue>({
+  columns,
+  data,
+  isLoading = false,
+  globalFilter,
+  setGlobalFilter,
+}: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
-  const [globalFilter, setGlobalFilter] = useState("");
+  const [selected, setSelected] = useState("approve");
 
   const table = useReactTable({
     data,
@@ -45,6 +64,9 @@ export function DataTable<TData, TValue>({ columns, data, isLoading }: DataTable
     getFilteredRowModel: getFilteredRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
     enableColumnResizing: false,
+    filterFns: {
+      fuzzy: fuzzyFilter,
+    },
     state: {
       sorting,
       columnFilters,
@@ -54,7 +76,7 @@ export function DataTable<TData, TValue>({ columns, data, isLoading }: DataTable
     },
     initialState: {
       pagination: {
-        pageSize: 50,
+        pageSize: 10,
       },
     },
   });
@@ -136,31 +158,103 @@ export function DataTable<TData, TValue>({ columns, data, isLoading }: DataTable
             </TableBody>
           </Table>
         </div>
-        <div className="flex items-center justify-center space-x-2 py-4 px-4 text-gray-400">
-          <div className="flex flex-1 items-center gap-2 text-xs">
-            <button>Prev</button>
-            <div className="flex items-center gap-4 bg-slate-200 px-4 py-1 rounded-xl">
-              <button className="text-gray-700">1</button>
-              <button>2</button>
-              <button>3</button>
-              <button>4</button>
+        <div className="flex items-center justify-center space-x-2 py-4 pt-6">
+          <RadioGroupApproving setSelected={setSelected} />
+        </div>
+        <div>
+          <div className="flex items-center justify-center space-x-2 py-4">
+            <button
+              type="button"
+              className={`text-md text-gray-400 ${
+                table.getCanPreviousPage() ? "grayscale-0" : "grayscale cursor-not-allowed"
+              }`}
+              onClick={() => table.setPageIndex(0)}
+              disabled={!table.getCanPreviousPage()}
+            >
+              First
+            </button>
+            <button
+              type="button"
+              className={`text-md text-gray-400 ${
+                table.getCanPreviousPage() ? "grayscale-0" : "grayscale cursor-not-allowed"
+              }`}
+              onClick={() => table.previousPage()}
+              disabled={!table.getCanPreviousPage()}
+            >
+              Prev
+            </button>
+            <div className="flex gap-1">
+              <span>
+                <div className="flex items-center gap-4 bg-slate-200 text-gray-700 px-4 py-1 rounded-xl font-bold">
+                  <span className="text-gray-400">{table.getState().pagination.pageIndex + 1}</span>
+                  <span>/</span>
+                  <span>{table.getPageCount()}</span>
+                </div>
+              </span>
             </div>
-            <div className="flex items-center gap-4 bg-slate-200 px-4 py-1 rounded-xl">
-              <button>... 10</button>
-            </div>
-            <button>Next</button>
+            <button
+              type="button"
+              className={`text-md text-gray-400 ${
+                table.getCanPreviousPage() ? "grayscale-0" : "grayscale cursor-not-allowed"
+              }`}
+              onClick={() => table.nextPage()}
+              disabled={!table.getCanNextPage()}
+            >
+              Next
+            </button>
+            <button
+              type="button"
+              className={`text-md text-gray-400 ${
+                table.getCanPreviousPage() ? "grayscale-0" : "grayscale cursor-not-allowed"
+              }`}
+              onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+              disabled={!table.getCanNextPage()}
+            >
+              Last
+            </button>
+          </div>
+          <div className="flex items-center justify-center space-x-2 pb-4">
+            <select
+              className="border-1-gray-200 flex rounded-md border bg-white p-2"
+              value={table.getState().pagination.pageSize}
+              onChange={(e) => {
+                table.setPageSize(Number(e.target.value));
+              }}
+            >
+              {[10, 50, 100, 150, 200].map((pageSize) => (
+                <option key={pageSize} value={pageSize}>
+                  Show {pageSize}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
-        <button
-          type="submit"
-          data-te-ripple-init
-          data-te-ripple-color="light"
-          className="!fixed bottom-5 right-5 rounded-md bg-green-500 p-3 text-md font-bold uppercase leading-tight text-white shadow-md transition duration-150 ease-in-out hover:bg-green-700 hover:shadow-lg focus:bg-green-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-green-800 active:shadow-lg"
-          id="btn-back-to-top"
-        >
-          <div className="flex items-center gap-2">Confirm</div>
-        </button>
+        {selected === "confirm" ? null : (
+          <button
+            type="submit"
+            data-te-ripple-init
+            data-te-ripple-color="light"
+            className="!fixed bottom-5 right-5 rounded-md bg-green-500 p-3 text-md font-bold uppercase leading-tight text-white shadow-md transition duration-150 ease-in-out hover:bg-green-700 hover:shadow-lg focus:bg-green-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-green-800 active:shadow-lg"
+            id="btn-back-to-top"
+            onClick={() => {
+              alert(`Are you sure you want to ${selected}?`);
+            }}
+          >
+            <div className="flex items-center gap-2">{selected}</div>
+          </button>
+        )}
       </div>
     </>
   );
 }
+
+const fuzzyFilter: FilterFn<any> = (row, columnId, value, addMeta) => {
+  // Rank the item
+  const itemRank = rankItem(row.getValue(columnId), value);
+  // Store the itemRank info
+  addMeta({
+    itemRank,
+  });
+  // Return if the item should be filtered in/out
+  return itemRank.passed;
+};

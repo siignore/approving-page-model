@@ -1,6 +1,9 @@
+"use client";
+
 import { Container } from "@/components/Container";
 import { columns } from "@/components/Table/columns";
 import { DataTable } from "@/components/Table/data-table";
+import { useState } from "react";
 
 const data = [
   {
@@ -9,7 +12,7 @@ const data = [
     product: "Map",
     createdAt: "20 May 2023",
     createdBy: "Isabella Smith",
-    approvalStatus: "Approved",
+    approvalStatus: "Pending",
   },
   {
     id: 2,
@@ -17,7 +20,7 @@ const data = [
     product: "Fluxogram",
     createdAt: "20 May 2023",
     createdBy: "David Miller",
-    approvalStatus: "Approved",
+    approvalStatus: "Pending",
   },
   {
     id: 3,
@@ -30,6 +33,8 @@ const data = [
 ];
 
 export default function Home() {
+  const [globalFilter, setGlobalFilter] = useState("");
+
   return (
     <div className="pt-4">
       <Container.Root>
@@ -40,14 +45,18 @@ export default function Home() {
           <Container.LeftPanel title="Filter">
             <div className="flex flex-col gap-2 w-4/6">
               <label htmlFor="search" className="mb-2 text-sm font-medium text-gray-900 sr-only">
-                Search
+                Type to Search...
               </label>
               <div className="relative">
                 <input
+                  value={globalFilter ?? ""}
+                  onChange={(value) => {
+                    setGlobalFilter(value.target.value);
+                  }}
                   type="search"
                   id="search"
                   className="block w-full p-4 pl-6 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Search"
+                  placeholder="Type to Search..."
                   required
                 />
                 <div className="absolute inset-y-0 right-0 flex items-center pr-6 pointer-events-none">
@@ -68,32 +77,16 @@ export default function Home() {
                   </svg>
                 </div>
               </div>
-              <select
-                id="countries"
-                className="block w-full p-4 pl-6 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option selected>Select Category</option>
-                <option value="A">A</option>
-                <option value="B">B</option>
-                <option value="C">C</option>
-                <option value="D">D</option>
-              </select>
+
               <div className="flex flex-1 items-center justify-between px-4 pt-4">
-                <button>
+                <button type="button" onClick={() => setGlobalFilter("")}>
                   <span className="text-sm text-gray-400 hover:text-gray-600">Clear Filter X</span>
-                </button>
-                <button
-                  type="submit"
-                  className="rounded-md bg-violet-500 p-3 text-xs font-bold uppercase leading-tight text-white transition duration-150 ease-in-out hover:bg-violet-700 focus:bg-violet-700 focus:outline-none focus:ring-0 active:bg-violet-800"
-                  id="btn-back-to-top"
-                >
-                  <div className="flex items-center gap-2">Apply</div>
                 </button>
               </div>
             </div>
           </Container.LeftPanel>
           <Container.RightPanel>
-            <DataTable columns={columns} data={data} />
+            <DataTable columns={columns} data={data} globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />
           </Container.RightPanel>
         </Container.Body>
       </Container.Root>
